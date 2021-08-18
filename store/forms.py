@@ -1,5 +1,5 @@
 from django import forms
-from .models import Books
+from .models import Books, Pictures
 from datetime import datetime
 
 
@@ -29,5 +29,21 @@ class BookUpdateForm(forms.ModelForm):
         obj = super().save(commit=False)
         # アップデートは、create_atを新たに更新するのはおかしい。値は既に入っているのでエラーにはならない。
         obj.update_at = datetime.now()
+        obj.save()
+        return obj
+
+
+class PictureUploadForm(forms.ModelForm):
+    picture = forms.FileField(required=False)
+
+    class Meta:
+        model = Pictures
+        fields = ['picture', ]
+
+    def save(self, *args, **kwargs):
+        obj = super().save(commit=False)
+        obj.create_at = datetime.now()
+        obj.update_at = datetime.now()
+        obj.book = kwargs['book']
         obj.save()
         return obj
