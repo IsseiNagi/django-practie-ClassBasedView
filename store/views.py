@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.base import (
     View, TemplateView, RedirectView
 )
@@ -9,10 +9,11 @@ from django.views.generic.edit import (
 )
 from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib import messages
 
 from datetime import datetime
 from . import forms
-from .models import Books
+from .models import Books, Pictures
 
 
 # Create your views here.
@@ -40,7 +41,7 @@ class HomeView(TemplateView):
 
     template_name = 'home.html'
 
-    # TemplatteViewのget_context_dataをオーバーライドしてカスタマイズ
+    # TemplateViewのget_context_dataをオーバーライドしてカスタマイズ
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)  # nameはkwargsに入ってくる
         context['name'] = kwargs.get('name')
@@ -52,7 +53,7 @@ class BookDetailView(DetailView):
     model = Books
     template_name = 'book.html'
 
-    # TemplatteViewと同じようにget_context_dataをオーバーライドしてカスタマイズできる
+    # TemplateViewと同じようにget_context_dataをオーバーライドしてカスタマイズできる
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
@@ -107,6 +108,25 @@ class BookUpdateView(SuccessMessageMixin, UpdateView):
     def get_success_message(self, cleaned_data):
         return cleaned_data.get('name') + 'を更新しました'
 
+    # 以下、画像アップロード機能の追加
+    # コンテキストでフォームを渡して、画面上でそのフォームを使って画像をアップロードする
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        picture_form = forms.PictureUploadForm()
+        pictures = Pictures.objects.filter_by_book(book=self.object)
+        context['pictures'] = pictures
+        context['picture_form'] = picture_form
+        return context
+
+    def post(self, request, *args, **kwargs):
+        # 本の内容自体のアップデートはUpdateViewに任せて、画像アップ処理を追加する
+        picture_form = forms.PictureUploadForm(
+            request.POST or None, request.FILES or None)
+        if picture_form.is_valid() and request.FILES:
+            book = self.get_object()  # 今、更新しているレコードを取得する
+            picture_form.save(book=book)
+        return super().post(request, *args, **kwargs)
+
 
 class BookDeleteView(DeleteView):
     model = Books
@@ -145,3 +165,16 @@ class BookRedirectView(RedirectView):
             return reverse_lazy('store:detail_book', kwargs={'pk': kwargs['pk']})
 
         return reverse_lazy('store:edit_book', kwargs={'pk': book.pk})
+
+
+# 画像をクリックさせてこのviewを実行して削除する簡易的なもの
+def delete_picture(request, pk):
+    picture = get_object_or_404(Pictures, pk=pk)
+    picture.delete()
+    # osを使ってmediaの下のpictureディレクトリに保存されている画像を合わせて削除するやり方
+    # import os
+    # if os.path.isfile(picture.picture.path):
+    #     os.remove(picture.picture.path)
+
+    messages.success(request, '画像を削除しました')
+    return redirect('store:edit_book', pk=picture.book.id)

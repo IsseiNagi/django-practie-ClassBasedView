@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import IndexView, HomeView, BookDetailView, BookListView, BookCreateView, BookUpdateView, BookDeleteView, BookFormView, BookRedirectView
+from .views import IndexView, HomeView, BookDetailView, BookListView, BookCreateView, BookUpdateView, BookDeleteView, BookFormView, BookRedirectView, delete_picture
 from django.views.generic.base import RedirectView
 # from django.views.generic.base import TemplateView
 
@@ -24,4 +24,5 @@ urlpatterns = [
     path('book_redirect_view/', BookRedirectView.as_view(), name='book_redirect_view'),
     # urlに対して引数を取って、引数をもとに遷移させる
     path('book_redirect_view/<int:pk>', BookRedirectView.as_view(), name='book_redirect_view'),
+    path('delete_picture/<int:pk>', delete_picture, name='delete_picture'),
 ]

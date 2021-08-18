@@ -7,6 +7,12 @@
             <td>説明：{{ object.description }}</td>
             <td><a href="{% url 'store:edit_book' object.id %}">編集</a></td>
             <td><a href="{% url 'store:delete_book' object.id %}">削除</a></td>
+            <td>
+                <!-- 回しているobjectのpictures_set要素を全て取得する -->
+                {% for picture in object.pictures_set.all %}
+                    <img width=20px src="{{ picture.picture.url }}" alt="">
+                {% endfor %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>

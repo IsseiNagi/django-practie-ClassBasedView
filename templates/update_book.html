@@ -4,8 +4,21 @@
 {% endfor %}
 {% endif %}
 
-<form method="post" action="">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
+    <hr>
+    {% for picture in pictures %}
+        <!-- 画像をクリックして削除ページへ飛ぶ -->
+        <a href="{% url 'store:delete_picture' pk=picture.id %}"><img width=100px src="{{ picture.picture.url }}" alt=""></a>
+    {% endfor %}
+    {{ picture_form.as_p }}
     <input type="submit" value="保存">
 </form>
+
+<!-- ホバーのCSSを直書き -->
+<style>
+    img:hover{
+        opacity: 0.2;
+    }
+</style>
