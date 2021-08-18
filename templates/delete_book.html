@@ -1,0 +1,6 @@
+<form method="POST" action="">
+    {% csrf_token %}
+    <!-- 最低要件としては、POSTのformと、それに伴うcsrf_tokenがあれば、動く -->
+    <p>『{{ object.name }}』の削除を実行しますか？</p>
+    <input type="submit" value="削除する">
+</form>
