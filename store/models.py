@@ -3,6 +3,9 @@ from django.urls import reverse_lazy
 from django.dispatch import receiver
 import os
 
+# ログ用
+import logging
+application_logger = logging.getLogger('application-logger')
 
 # Create your models here.
 
@@ -50,3 +53,5 @@ def delete_picture(sender, instance, **kwargs):  # instanceにPicturesの情報�
     if instance.picture:
         if os.path.isfile(instance.picture.path):
             os.remove(instance.picture.path)
+            # ログ出力
+            application_logger.info(f'{instance.picture.path}を削除しました')
