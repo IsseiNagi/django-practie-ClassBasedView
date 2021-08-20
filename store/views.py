@@ -11,6 +11,13 @@ from django.urls import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 
+from django.http import Http404
+
+# settings.pyで定義したロガーのインスタンスを生成する
+import logging
+application_logger = logging.getLogger('application-logger')
+error_logger = logging.getLogger('error-logger')
+
 from datetime import datetime
 from . import forms
 from .models import Books, Pictures
@@ -44,6 +51,12 @@ class HomeView(TemplateView):
     # TemplateViewのget_context_dataをオーバーライドしてカスタマイズ
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)  # nameはkwargsに入ってくる
+        # debugログ出力用
+        application_logger.debug('Home画面を表示します')
+        # エラーログ出力用
+        if kwargs.get('name') == 'あああ':
+            # error_logger.error('この名前は使用できません')  # Middlewareを作成し統合のためコメントアウト
+            raise Http404('この名前は使用できません')
         context['name'] = kwargs.get('name')
         context['time'] = datetime.now()
         return context
